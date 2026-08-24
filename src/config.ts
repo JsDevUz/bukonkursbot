@@ -14,6 +14,12 @@ const ADMIN_IDS: number[] = adminIdsRaw
   .map((id) => parseInt(id.trim(), 10))
   .filter((id) => !isNaN(id));
 
+function sanitizeSecret(secret?: string): string {
+  if (!secret) return 'webhook_secret_token_123';
+  const cleaned = secret.replace(/[^A-Za-z0-9_-]/g, '_');
+  return cleaned.length > 0 ? cleaned : 'webhook_secret_token_123';
+}
+
 export const config = {
   botToken: BOT_TOKEN,
   adminIds: ADMIN_IDS,
@@ -21,6 +27,6 @@ export const config = {
   useWebhook: process.env.USE_WEBHOOK === 'true',
   domain: process.env.DOMAIN || '',
   port: parseInt(process.env.PORT || '3000', 10),
-  webhookSecret: process.env.WEBHOOK_SECRET || 'secret_bot_token_token',
+  webhookSecret: sanitizeSecret(process.env.WEBHOOK_SECRET),
   isAdmin: (id: number) => ADMIN_IDS.includes(id),
 };
