@@ -5,6 +5,7 @@ import { config } from './config.js';
 import { MyContext } from './types.js';
 import { getDb } from './database/db.js';
 import { createContestWizard } from './handlers/wizard.js';
+import { broadcastWizard } from './handlers/broadcast.js';
 import {
   handleAdminCommand,
   handleAdminStatsCallback,
@@ -44,8 +45,9 @@ async function bootstrap() {
   );
   bot.use(conversations());
 
-  // Register Conversation
+  // Register Conversations
   bot.use(createConversation(createContestWizard));
+  bot.use(createConversation(broadcastWizard));
 
   // Commands
   bot.command('start', handleStart);
@@ -62,6 +64,12 @@ async function bootstrap() {
     if (!ctx.from || !config.isAdmin(ctx.from.id)) return;
     await ctx.answerCallbackQuery();
     await ctx.conversation.enter('createContestWizard');
+  });
+
+  bot.callbackQuery('admin_broadcast', async (ctx) => {
+    if (!ctx.from || !config.isAdmin(ctx.from.id)) return;
+    await ctx.answerCallbackQuery();
+    await ctx.conversation.enter('broadcastWizard');
   });
 
   bot.callbackQuery('admin_stats', handleAdminStatsCallback);

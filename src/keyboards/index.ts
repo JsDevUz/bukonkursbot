@@ -39,8 +39,9 @@ export const adminMainMenu = new InlineKeyboard()
   .text('➕ Yangi konkurs yaratish', 'admin_create_contest')
   .row()
   .text('📊 Statistika & Reyting', 'admin_stats')
+  .text('🏆 G\'oliblar', 'admin_winners')
   .row()
-  .text('🏆 G\'oliblar ro\'yxati', 'admin_winners')
+  .text('📢 Barchaga xabar yuborish', 'admin_broadcast')
   .row()
   .text('🛑 Faol konkursni to\'xtatish', 'admin_stop_contest');
 

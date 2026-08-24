@@ -227,4 +227,9 @@ export const queries = {
       winnersCount: winnersRow?.count || 0,
     };
   },
+
+  getAllUserIds(db: Database.Database): number[] {
+    const rows = db.prepare('SELECT telegram_id FROM users').all() as { telegram_id: number }[];
+    return rows.map((r) => r.telegram_id);
+  },
 };
