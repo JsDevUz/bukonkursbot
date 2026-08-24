@@ -3,7 +3,6 @@ import { queries } from '../database/queries.js';
 import { getDb } from '../database/db.js';
 import { checkAndDeliverReward } from '../services/contest.js';
 import {
-  userMainMenu,
   getUserInlineDashboard,
   userBackToMenuKeyboard,
 } from '../keyboards/index.js';
@@ -131,11 +130,11 @@ export async function handleStart(ctx: MyContext) {
       `Tez orada ajoyib sovg'alar bilan yangi konkurs boshlanadi. Yangiliklarni kuzatib boring!`;
 
     if (ctx.callbackQuery) {
-      await safeEditMessage(ctx, msg, userMainMenu);
+      await safeEditMessage(ctx, msg);
     } else {
       await ctx.reply(msg, {
         parse_mode: 'HTML',
-        reply_markup: userMainMenu,
+        reply_markup: { remove_keyboard: true },
       });
     }
     return;
@@ -169,11 +168,6 @@ export async function handleStart(ctx: MyContext) {
       reply_markup: inlineMenu,
     });
   }
-
-  // Also send bottom keyboard for instant access
-  await ctx.reply('👇 Tezkor menyudan ham foydalanishingiz mumkin:', {
-    reply_markup: userMainMenu,
-  });
 }
 
 export async function handleMyScore(ctx: MyContext) {

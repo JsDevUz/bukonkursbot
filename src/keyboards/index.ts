@@ -1,13 +1,5 @@
-import { InlineKeyboard, Keyboard } from 'grammy';
+import { InlineKeyboard } from 'grammy';
 import { generateReferralLink } from '../utils/helpers.js';
-
-export const userMainMenu = new Keyboard()
-  .text('🚀 Referal havolam')
-  .text('📊 Mening ballim')
-  .row()
-  .text('🏆 TOP-10 Reyting')
-  .text('ℹ️ Qoidalar')
-  .resized();
 
 export function getUserInlineDashboard(botUsername: string, userId: number, contestTitle: string) {
   const refLink = generateReferralLink(botUsername, userId);
