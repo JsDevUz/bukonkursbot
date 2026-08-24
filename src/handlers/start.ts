@@ -13,6 +13,7 @@ import {
   generateReferralLink,
   escapeHtml,
   generateProgressBar,
+  safeEditMessage,
 } from '../utils/helpers.js';
 
 export function getDashboardText(
@@ -124,20 +125,29 @@ export async function handleStart(ctx: MyContext) {
 
   // Send Contest Info / Welcome Banner
   if (!contest || !contest.is_active) {
-    await ctx.reply(
+    const msg =
       `👋 Assalomu alaykum, <b>${escapeHtml(ctx.from.first_name)}</b>!\n\n` +
-        `⚪️ <b>Hozirda faol konkurs mavjud emas.</b>\n` +
-        `Tez orada ajoyib sovg'alar bilan yangi konkurs boshlanadi. Yangiliklarni kuzatib boring!`,
-      {
+      `⚪️ <b>Hozirda faol konkurs mavjud emas.</b>\n` +
+      `Tez orada ajoyib sovg'alar bilan yangi konkurs boshlanadi. Yangiliklarni kuzatib boring!`;
+
+    if (ctx.callbackQuery) {
+      await safeEditMessage(ctx, msg, userMainMenu);
+    } else {
+      await ctx.reply(msg, {
         parse_mode: 'HTML',
         reply_markup: userMainMenu,
-      }
-    );
+      });
+    }
     return;
   }
 
   const bannerText = getDashboardText(user, contest, botInfo.username);
   const inlineMenu = getUserInlineDashboard(botInfo.username, ctx.from.id, contest.title);
+
+  if (ctx.callbackQuery) {
+    await safeEditMessage(ctx, bannerText, inlineMenu);
+    return;
+  }
 
   if (contest.photo_file_id) {
     try {
@@ -174,7 +184,9 @@ export async function handleMyScore(ctx: MyContext) {
   const botInfo = ctx.me;
 
   if (!contest || !contest.is_active) {
-    await ctx.reply('⚪️ Hozirda faol konkurs mavjud emas.');
+    const msg = '⚪️ Hozirda faol konkurs mavjud emas.';
+    if (ctx.callbackQuery) await safeEditMessage(ctx, msg, userBackToMenuKeyboard);
+    else await ctx.reply(msg);
     return;
   }
 
@@ -205,10 +217,14 @@ export async function handleMyScore(ctx: MyContext) {
 
   msg += `\n🔗 <b>Sizning taklif havolangiz:</b>\n<code>${refLink}</code>`;
 
-  await ctx.reply(msg, {
-    parse_mode: 'HTML',
-    reply_markup: getUserInlineDashboard(botInfo.username, ctx.from.id, contest.title),
-  });
+  if (ctx.callbackQuery) {
+    await safeEditMessage(ctx, msg, userBackToMenuKeyboard);
+  } else {
+    await ctx.reply(msg, {
+      parse_mode: 'HTML',
+      reply_markup: getUserInlineDashboard(botInfo.username, ctx.from.id, contest.title),
+    });
+  }
 }
 
 export async function handleReferralLinkMenu(ctx: MyContext) {
@@ -228,10 +244,14 @@ export async function handleReferralLinkMenu(ctx: MyContext) {
     `2. Do'stlaringiz yoki guruhlarga yuboring;\n` +
     `3. Havolangiz orqali botga kirgan har bir inson uchun sizga <b>1 ball</b> beriladi!`;
 
-  await ctx.reply(msg, {
-    parse_mode: 'HTML',
-    reply_markup: getUserInlineDashboard(botInfo.username, ctx.from.id, title),
-  });
+  if (ctx.callbackQuery) {
+    await safeEditMessage(ctx, msg, userBackToMenuKeyboard);
+  } else {
+    await ctx.reply(msg, {
+      parse_mode: 'HTML',
+      reply_markup: getUserInlineDashboard(botInfo.username, ctx.from.id, title),
+    });
+  }
 }
 
 export async function handleLeaderboard(ctx: MyContext) {
@@ -256,10 +276,14 @@ export async function handleLeaderboard(ctx: MyContext) {
     msg += `\n🎯 <i>Sovg'a uchun talab: <b>${contest.target_referrals}</b> ta taklif.</i>`;
   }
 
-  await ctx.reply(msg, {
-    parse_mode: 'HTML',
-    reply_markup: userBackToMenuKeyboard,
-  });
+  if (ctx.callbackQuery) {
+    await safeEditMessage(ctx, msg, userBackToMenuKeyboard);
+  } else {
+    await ctx.reply(msg, {
+      parse_mode: 'HTML',
+      reply_markup: userBackToMenuKeyboard,
+    });
+  }
 }
 
 export async function handleRules(ctx: MyContext) {
@@ -267,7 +291,9 @@ export async function handleRules(ctx: MyContext) {
   const contest = queries.getActiveContest(db);
 
   if (!contest) {
-    await ctx.reply('⚪️ Hozirda faol konkurs yo\'q.');
+    const msg = '⚪️ Hozirda faol konkurs yo\'q.';
+    if (ctx.callbackQuery) await safeEditMessage(ctx, msg, userBackToMenuKeyboard);
+    else await ctx.reply(msg);
     return;
   }
 
@@ -282,10 +308,14 @@ export async function handleRules(ctx: MyContext) {
     `5️⃣ <b>Muddati:</b> Konkurs tugashiga <b>${timeInfo.text}</b> qoldi (${formatDateTime(contest.end_time)} gacha).\n\n` +
     `⚠️ <i>DIQQAT: Nakrutka, soxta yoki bot hisoblarni qo'shish qat'iyan taqiqlanadi!</i>`;
 
-  await ctx.reply(msg, {
-    parse_mode: 'HTML',
-    reply_markup: userBackToMenuKeyboard,
-  });
+  if (ctx.callbackQuery) {
+    await safeEditMessage(ctx, msg, userBackToMenuKeyboard);
+  } else {
+    await ctx.reply(msg, {
+      parse_mode: 'HTML',
+      reply_markup: userBackToMenuKeyboard,
+    });
+  }
 }
 
 // INLINE CALLBACK HANDLERS
@@ -347,22 +377,7 @@ export async function handleUserRefreshCallback(ctx: MyContext) {
   const bannerText = getDashboardText(user, contest, botInfo.username);
   const inlineMenu = getUserInlineDashboard(botInfo.username, ctx.from.id, contest.title);
 
-  try {
-    if (ctx.callbackQuery?.message?.text) {
-      await ctx.editMessageText(bannerText, {
-        parse_mode: 'HTML',
-        reply_markup: inlineMenu,
-      });
-    } else if (ctx.callbackQuery?.message?.caption) {
-      await ctx.editMessageCaption({
-        caption: bannerText.length > 1024 ? bannerText.substring(0, 1020) + '...' : bannerText,
-        parse_mode: 'HTML',
-        reply_markup: inlineMenu,
-      });
-    }
-  } catch {
-    // Message not modified or cannot edit
-  }
+  await safeEditMessage(ctx, bannerText, inlineMenu);
 }
 
 export async function handleUserBackToMenu(ctx: MyContext) {

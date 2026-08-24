@@ -2,7 +2,12 @@ import { MyContext } from '../types.js';
 import { queries } from '../database/queries.js';
 import { getDb } from '../database/db.js';
 import { adminMainMenu } from '../keyboards/index.js';
-import { formatDateTime, getTimeRemaining, escapeHtml } from '../utils/helpers.js';
+import {
+  formatDateTime,
+  getTimeRemaining,
+  escapeHtml,
+  safeEditMessage,
+} from '../utils/helpers.js';
 import { config } from '../config.js';
 
 export async function handleAdminCommand(ctx: MyContext) {
@@ -35,10 +40,15 @@ export async function handleAdminCommand(ctx: MyContext) {
     `🎉 G'oliblar soni: <b>${stats.winnersCount}</b>\n\n` +
     `Quyidagi amallardan birini tanlang:`;
 
-  await ctx.reply(msg, {
-    parse_mode: 'HTML',
-    reply_markup: adminMainMenu,
-  });
+  if (ctx.callbackQuery) {
+    await ctx.answerCallbackQuery();
+    await safeEditMessage(ctx, msg, adminMainMenu);
+  } else {
+    await ctx.reply(msg, {
+      parse_mode: 'HTML',
+      reply_markup: adminMainMenu,
+    });
+  }
 }
 
 export async function handleAdminStatsCallback(ctx: MyContext) {
@@ -75,11 +85,8 @@ export async function handleAdminStatsCallback(ctx: MyContext) {
     });
   }
 
-  await ctx.reply(msg, {
-    parse_mode: 'HTML',
-    reply_markup: {
-      inline_keyboard: [[{ text: '🔙 Admin menyuga qaytish', callback_data: 'admin_back' }]],
-    },
+  await safeEditMessage(ctx, msg, {
+    inline_keyboard: [[{ text: '🔙 Admin menyuga qaytish', callback_data: 'admin_back' }]],
   });
 }
 
@@ -102,11 +109,8 @@ export async function handleAdminWinnersCallback(ctx: MyContext) {
     });
   }
 
-  await ctx.reply(msg, {
-    parse_mode: 'HTML',
-    reply_markup: {
-      inline_keyboard: [[{ text: '🔙 Admin menyuga qaytish', callback_data: 'admin_back' }]],
-    },
+  await safeEditMessage(ctx, msg, {
+    inline_keyboard: [[{ text: '🔙 Admin menyuga qaytish', callback_data: 'admin_back' }]],
   });
 }
 
@@ -118,20 +122,20 @@ export async function handleAdminStopContestCallback(ctx: MyContext) {
   const contest = queries.getActiveContest(db);
 
   if (!contest) {
-    await ctx.reply('⚪️ Hozirda faol konkurs mavjud emas.');
+    await safeEditMessage(ctx, '⚪️ Hozirda faol konkurs mavjud emas.', {
+      inline_keyboard: [[{ text: '🔙 Admin menyu', callback_data: 'admin_back' }]],
+    });
     return;
   }
 
-  await ctx.reply(
+  await safeEditMessage(
+    ctx,
     `🛑 <b>"${escapeHtml(contest.title)}"</b> konkursini rostdan ham to'xtatmoqchimisiz?`,
     {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: 'Ha, konkursni to\'xtatish', callback_data: `confirm_stop_${contest.id}` }],
-          [{ text: 'Bekor qilish', callback_data: 'cancel_action' }],
-        ],
-      },
+      inline_keyboard: [
+        [{ text: 'Ha, konkursni to\'xtatish', callback_data: `confirm_stop_${contest.id}` }],
+        [{ text: '🔙 Bekor qilish', callback_data: 'admin_back' }],
+      ],
     }
   );
 }
@@ -143,9 +147,7 @@ export async function handleConfirmStopContest(ctx: MyContext, contestId: number
   const db = getDb();
   queries.endContest(db, contestId);
 
-  await ctx.reply('✅ Konkurs to\'xtatildi.', {
-    reply_markup: {
-      inline_keyboard: [[{ text: '👑 Admin menyu', callback_data: 'admin_back' }]],
-    },
+  await safeEditMessage(ctx, '✅ Konkurs to\'xtatildi.', {
+    inline_keyboard: [[{ text: '👑 Admin menyu', callback_data: 'admin_back' }]],
   });
 }

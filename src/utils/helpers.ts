@@ -1,3 +1,5 @@
+import { MyContext } from '../types.js';
+
 export function formatDateTime(isoString: string): string {
   try {
     const date = new Date(isoString);
@@ -56,4 +58,37 @@ export function generateProgressBar(current: number, total: number, barLength: n
   const empty = barLength - filled;
   const percentText = Math.round(percentage * 100);
   return `${'▰'.repeat(filled)}${'▱'.repeat(empty)} ${percentText}%`;
+}
+
+export async function safeEditMessage(
+  ctx: MyContext,
+  text: string,
+  replyMarkup?: any
+): Promise<void> {
+  try {
+    if (ctx.callbackQuery?.message?.caption !== undefined) {
+      await ctx.editMessageCaption({
+        caption: text.length > 1024 ? text.substring(0, 1020) + '...' : text,
+        parse_mode: 'HTML',
+        reply_markup: replyMarkup,
+      });
+    } else if (ctx.callbackQuery?.message) {
+      await ctx.editMessageText(text, {
+        parse_mode: 'HTML',
+        reply_markup: replyMarkup,
+      });
+    } else {
+      await ctx.reply(text, {
+        parse_mode: 'HTML',
+        reply_markup: replyMarkup,
+      });
+    }
+  } catch (err: any) {
+    if (!err.message?.includes('message is not modified')) {
+      await ctx.reply(text, {
+        parse_mode: 'HTML',
+        reply_markup: replyMarkup,
+      });
+    }
+  }
 }
