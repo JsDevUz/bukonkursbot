@@ -17,19 +17,20 @@ export async function handleStart(ctx: MyContext) {
   const contest = queries.getActiveContest(db);
   const botInfo = ctx.me;
 
-  // Extract referral payload (e.g., /start ref_12345678)
-  const startPayload = ctx.match as string | undefined;
+  // Extract referral payload (e.g., /start ref_12345678 or /start 12345678)
+  const rawPayload = (ctx.match as string | undefined)?.trim();
   let referrerId: number | null = null;
 
-  if (startPayload && typeof startPayload === 'string' && startPayload.startsWith('ref_')) {
-    const parsedId = parseInt(startPayload.replace('ref_', ''), 10);
+  if (rawPayload) {
+    const cleanPayload = rawPayload.replace(/^ref_/, '');
+    const parsedId = parseInt(cleanPayload, 10);
     if (!isNaN(parsedId) && parsedId !== ctx.from.id) {
       referrerId = parsedId;
     }
   }
 
   // Register or update user
-  const { user, isNew } = queries.upsertUser(db, {
+  const { user } = queries.upsertUser(db, {
     telegram_id: ctx.from.id,
     first_name: ctx.from.first_name,
     last_name: ctx.from.last_name,
@@ -37,11 +38,13 @@ export async function handleStart(ctx: MyContext) {
     referred_by: referrerId,
   });
 
-  // If newly joined via valid referral and contest is active
-  if (isNew && referrerId && contest && contest.is_active) {
+  // If user hasn't been referred yet and came via a valid referral link during an active contest
+  let referrerName: string | null = null;
+  if (!user.referred_by && referrerId && contest && contest.is_active) {
     const refResult = queries.registerReferral(db, referrerId, ctx.from.id);
     if (refResult.success && refResult.referrer) {
       const referrer = refResult.referrer;
+      referrerName = referrer.first_name || 'Do\'stingiz';
       const progress = `${referrer.referral_count} / ${contest.target_referrals}`;
 
       // Notify referrer about new invite

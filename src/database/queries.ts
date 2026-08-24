@@ -124,19 +124,30 @@ export const queries = {
         return { success: false, referrer: null };
       }
 
-      // Check referrer existence
-      const referrer = db
+      // Check referrer existence, if not exists create a stub
+      let referrer = db
         .prepare('SELECT * FROM users WHERE telegram_id = ?')
         .get(referrerId) as DbUser | undefined;
 
       if (!referrer) {
-        return { success: false, referrer: null };
+        db.prepare(
+          'INSERT INTO users (telegram_id, first_name, referral_count, is_winner, reward_delivered) VALUES (?, ?, 0, 0, 0)'
+        ).run(referrerId, 'Foydalanuvchi');
+        referrer = db
+          .prepare('SELECT * FROM users WHERE telegram_id = ?')
+          .get(referrerId) as DbUser;
       }
 
       // Record referral
       db.prepare(
         'INSERT INTO referrals (referrer_id, referred_user_id) VALUES (?, ?)'
       ).run(referrerId, referredUserId);
+
+      // Update referred user's referred_by
+      db.prepare('UPDATE users SET referred_by = ? WHERE telegram_id = ?').run(
+        referrerId,
+        referredUserId
+      );
 
       // Increment referrer's count
       db.prepare(
