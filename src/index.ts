@@ -87,17 +87,24 @@ async function bootstrap() {
     const webhookPath = `/webhook/${config.webhookSecret}`;
     const webhookUrl = `https://${config.domain}${webhookPath}`;
 
-    const server = http.createServer(async (req, res) => {
-      if (req.url === '/health') {
+    const handleUpdate = webhookCallback(bot, 'http', {
+      secretToken: config.webhookSecret,
+    });
+
+    const server = http.createServer((req, res) => {
+      const url = req.url || '';
+      console.log(`📡 [HTTP ${req.method}] ${url}`);
+
+      if (url === '/health') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok', time: new Date().toISOString() }));
         return;
       }
 
-      if (req.url === webhookPath && req.method === 'POST') {
-        const handler = webhookCallback(bot, 'http');
-        handler(req, res);
+      if (url.startsWith(webhookPath) && req.method === 'POST') {
+        return handleUpdate(req, res);
       } else {
+        console.warn(`⚠️ Noto'g'ri so'rov keldi: ${req.method} ${url}`);
         res.writeHead(404);
         res.end();
       }
@@ -108,8 +115,16 @@ async function bootstrap() {
       try {
         await bot.api.setWebhook(webhookUrl, {
           secret_token: config.webhookSecret,
+          drop_pending_updates: true,
         });
         console.log(`✅ Webhook muvaffaqiyatli sozlandi: ${webhookUrl}`);
+
+        const webhookInfo = await bot.api.getWebhookInfo();
+        console.log('ℹ️ Webhook Info:', {
+          url: webhookInfo.url,
+          pending_update_count: webhookInfo.pending_update_count,
+          last_error_message: webhookInfo.last_error_message,
+        });
       } catch (e) {
         console.error('❌ Webhook o\'rnatishda xatolik:', e);
       }
