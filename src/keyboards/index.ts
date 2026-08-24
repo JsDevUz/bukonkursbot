@@ -2,14 +2,14 @@ import { InlineKeyboard, Keyboard } from 'grammy';
 import { generateReferralLink } from '../utils/helpers.js';
 
 export const userMainMenu = new Keyboard()
-  .text('🔗 Referal havolam')
+  .text('🚀 Referal havolam')
   .text('📊 Mening ballim')
   .row()
-  .text('🏆 Reyting & G\'oliblar')
+  .text('🏆 TOP-10 Reyting')
   .text('ℹ️ Qoidalar')
   .resized();
 
-export function getShareKeyboard(botUsername: string, userId: number, contestTitle: string) {
+export function getUserInlineDashboard(botUsername: string, userId: number, contestTitle: string) {
   const refLink = generateReferralLink(botUsername, userId);
   const shareText = encodeURIComponent(
     `🎁 "${contestTitle}" konkursida qatnashing va qimmatbaho sovg'aga ega bo'ling!\n👉 Havola: ${refLink}`
@@ -17,9 +17,22 @@ export function getShareKeyboard(botUsername: string, userId: number, contestTit
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${shareText}`;
 
   return new InlineKeyboard()
-    .url('↗️ Do\'stlarga ulashish', shareUrl)
+    .url('🚀 Do\'stlarga ulashish', shareUrl)
     .row()
-    .text('🔄 Ballni tekshirish', 'check_my_score');
+    .text('📊 Mening ballim & Natija', 'user_score')
+    .text('🏆 TOP-10 Reyting', 'user_leaderboard')
+    .row()
+    .text('🎁 Sovg\'ani tekshirish', 'user_claim')
+    .text('ℹ️ Qoidalar', 'user_rules')
+    .row()
+    .text('🔄 Yangilash', 'user_refresh');
+}
+
+export const userBackToMenuKeyboard = new InlineKeyboard()
+  .text('🔙 Asosiy menyuga qaytish', 'user_back_to_menu');
+
+export function getShareKeyboard(botUsername: string, userId: number, contestTitle: string) {
+  return getUserInlineDashboard(botUsername, userId, contestTitle);
 }
 
 export const adminMainMenu = new InlineKeyboard()

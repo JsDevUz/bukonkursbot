@@ -23,7 +23,7 @@ export function getTimeRemaining(isoString: string): {
   const diff = target - now;
 
   if (diff <= 0) {
-    return { isExpired: true, text: "Vaqt tugagan ⌛️" };
+    return { isExpired: true, text: 'Vaqt tugagan ⌛️' };
   }
 
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -47,4 +47,13 @@ export function escapeHtml(text: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+export function generateProgressBar(current: number, total: number, barLength: number = 8): string {
+  if (total <= 0) return '▰'.repeat(barLength);
+  const percentage = Math.min(1, Math.max(0, current / total));
+  const filled = Math.round(percentage * barLength);
+  const empty = barLength - filled;
+  const percentText = Math.round(percentage * 100);
+  return `${'▰'.repeat(filled)}${'▱'.repeat(empty)} ${percentText}%`;
 }

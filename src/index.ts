@@ -18,6 +18,12 @@ import {
   handleReferralLinkMenu,
   handleLeaderboard,
   handleRules,
+  handleUserScoreCallback,
+  handleUserLeaderboardCallback,
+  handleUserClaimCallback,
+  handleUserRulesCallback,
+  handleUserRefreshCallback,
+  handleUserBackToMenu,
 } from './handlers/start.js';
 
 async function bootstrap() {
@@ -45,10 +51,10 @@ async function bootstrap() {
   bot.command('start', handleStart);
   bot.command('admin', handleAdminCommand);
 
-  // Keyboard button text handlers
-  bot.hears('🔗 Referal havolam', handleReferralLinkMenu);
+  // Keyboard button text handlers (Reply keyboard)
+  bot.hears(['🚀 Referal havolam', '🔗 Referal havolam'], handleReferralLinkMenu);
   bot.hears('📊 Mening ballim', handleMyScore);
-  bot.hears('🏆 Reyting & G\'oliblar', handleLeaderboard);
+  bot.hears(['🏆 TOP-10 Reyting', '🏆 Reyting & G\'oliblar'], handleLeaderboard);
   bot.hears('ℹ️ Qoidalar', handleRules);
 
   // Admin callback handlers
@@ -68,11 +74,14 @@ async function bootstrap() {
     await handleConfirmStopContest(ctx, contestId);
   });
 
-  // User callback handlers
-  bot.callbackQuery('check_my_score', async (ctx) => {
-    await ctx.answerCallbackQuery();
-    await handleMyScore(ctx);
-  });
+  // User interactive dashboard callback handlers
+  bot.callbackQuery('user_score', handleUserScoreCallback);
+  bot.callbackQuery('user_leaderboard', handleUserLeaderboardCallback);
+  bot.callbackQuery('user_claim', handleUserClaimCallback);
+  bot.callbackQuery('user_rules', handleUserRulesCallback);
+  bot.callbackQuery('user_refresh', handleUserRefreshCallback);
+  bot.callbackQuery('user_back_to_menu', handleUserBackToMenu);
+  bot.callbackQuery('check_my_score', handleUserScoreCallback);
 
   bot.callbackQuery('cancel_action', async (ctx) => {
     await ctx.answerCallbackQuery('Bekor qilindi');
