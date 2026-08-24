@@ -42,6 +42,5 @@ export interface SessionData {
   // Can be extended if needed
 }
 
-export type BaseContext = Context & SessionFlavor<SessionData>;
-export type MyContext = ConversationFlavor<BaseContext>;
-export type MyConversation = Conversation<MyContext, MyContext>;
+export type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
+export type MyConversation = Conversation<MyContext>;

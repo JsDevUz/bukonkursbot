@@ -10,12 +10,17 @@
     "start": "node dist/index.js",
     "test": "tsx test/contest.test.ts"
   },
-  "keywords": ["telegram", "bot", "contest", "konkurs", "referral"],
+  "keywords": [
+    "telegram",
+    "bot",
+    "contest",
+    "konkurs",
+    "referral"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@grammyjs/conversations": "^1.2.0",
-    "@grammyjs/runner": "^2.0.9",
     "better-sqlite3": "^11.8.1",
     "dotenv": "^16.4.7",
     "grammy": "^1.35.0"

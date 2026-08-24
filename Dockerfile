@@ -16,16 +16,17 @@ FROM node:22-alpine AS runner
 
 WORKDIR /app
 
-RUN apk add --no-cache python3 make g++
+# libstdc++ is required for better-sqlite3 binary
+RUN apk add --no-cache python3 make g++ libstdc++
 
 ENV NODE_ENV=production
 
 COPY package*.json ./
-RUN npm ci --only=production && apk del python3 make g++
+RUN npm ci --omit=dev && apk del python3 make g++
 
 COPY --from=builder /app/dist ./dist
 
-# Data folder for SQLite
+# Directory for SQLite database persistence
 RUN mkdir -p /app/data
 
 EXPOSE 3000
