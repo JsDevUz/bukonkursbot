@@ -100,11 +100,19 @@ export async function handleStart(ctx: MyContext) {
   const shareMarkup = getShareKeyboard(botInfo.username, ctx.from.id, contest.title);
 
   if (contest.photo_file_id) {
-    await ctx.replyWithPhoto(contest.photo_file_id, {
-      caption: bannerText,
-      parse_mode: 'HTML',
-      reply_markup: shareMarkup,
-    });
+    try {
+      await ctx.replyWithPhoto(contest.photo_file_id, {
+        caption: bannerText.length > 1024 ? bannerText.substring(0, 1020) + '...' : bannerText,
+        parse_mode: 'HTML',
+        reply_markup: shareMarkup,
+      });
+    } catch (photoErr) {
+      console.warn('Rasm yuborishda xatolik, matn yuborilmoqda:', photoErr);
+      await ctx.reply(bannerText, {
+        parse_mode: 'HTML',
+        reply_markup: shareMarkup,
+      });
+    }
   } else {
     await ctx.reply(bannerText, {
       parse_mode: 'HTML',

@@ -27,6 +27,8 @@ async function bootstrap() {
   getDb();
 
   const bot = new Bot<MyContext>(config.botToken);
+  await bot.init();
+  console.log(`🤖 Bot ma'lumotlari muvaffaqiyatli yuklandi: @${bot.botInfo.username}`);
 
   // Session and Conversations Middleware
   bot.use(
