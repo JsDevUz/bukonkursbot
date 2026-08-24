@@ -1,0 +1,29 @@
+{
+  "name": "bukonkursbot",
+  "version": "1.0.0",
+  "description": "Telegram Konkurs Bot with referral and reward system",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "tsx test/contest.test.ts"
+  },
+  "keywords": ["telegram", "bot", "contest", "konkurs", "referral"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@grammyjs/conversations": "^1.2.0",
+    "@grammyjs/runner": "^2.0.9",
+    "better-sqlite3": "^11.8.1",
+    "dotenv": "^16.4.7",
+    "grammy": "^1.35.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.13.5",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  }
+}

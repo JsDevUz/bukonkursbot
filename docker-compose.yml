@@ -1,0 +1,20 @@
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PORT=3000
+      - DB_PATH=/app/data/contest.db
+    volumes:
+      - ./data:/app/data
+    networks:
+      proxy:
+        aliases:
+          - bukonkursbot
+
+networks:
+  proxy:
+    external: true
+    name: proxy

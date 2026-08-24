@@ -1,0 +1,13 @@
+{$DOMAIN:localhost} {
+    # Reverse proxy to bot container on port 3000
+    reverse_proxy bot:3000
+
+    # Compression and security headers
+    encode gzip zstd
+
+    # Logging
+    log {
+        output stdout
+        format console
+    }
+}
